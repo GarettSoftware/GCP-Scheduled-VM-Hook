@@ -1,0 +1,12 @@
+# Logs
+logs/
+
+# Cache
+*__pycache__*
+
+# Environment
+.idea
+.env
+
+# Configurations
+hook/maintenance/setup.config
