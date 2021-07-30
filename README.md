@@ -2,7 +2,7 @@
 
 ## Prerequisites
 This repository assumes you have purchased Garett MacGowan's GCP Scheduled Virtual Machine
-Infrastructure Setup Service. Contact `garettsoftware@gmail.com` for details.
+Infrastructure Setup Service. See https://garettmacgowan.com/services/scheduled_compute/ for details.
 
 ## What is this repository for?
 This repository works in conjunction with the infrastructure set up by Garett in order to
@@ -29,11 +29,11 @@ Let's set up where your application will live and receive updates.
 repository.
 2) Modify the `scheduler_hook.py` file to execute your existing code.
 3) Ensure you have a requirements.txt file at the top level of your project (or copy the one here).
-4) Ensure the /logs directory is present in your .gitignore (or copy the one here).
+4) Ensure the /logs directory is present in your .gitignore (or copy the .gitignore here).
 
 #### Case 2: No Code Yet
-1) Clone this repository to your git repository hosting service, e.g., GitHub.
-2) Take note of the name you gave the repository clone.
+1) Hit the "Use this template" button at the top of this page to create a new repository using this template.
+2) Take note of the name you gave the repository.
 
 ### Google Cloud Platform Account Setup
 1) Set up a Google Cloud Platform (GCP) account
@@ -45,10 +45,10 @@ repository.
    https://console.cloud.google.com/billing
 4) Link the project to the billing account
    https://console.cloud.google.com/billing/projects
-4) Give `garettsoftware@gmail.com` the `Editor` role for the project (necessary for setup, you can revoke access after setup complete)
+4) Ask Garett for the email address to add to the `Editor` role for the project (necessary for setup, you can revoke access after setup complete)
 https://console.cloud.google.com/iam-admin/
 
-### Prepare Answers to the Following Questions and Send to garettsoftware@gmail.com
+### Prepare Answers to the Following Questions and Send to Garett
 1) What is your `Project ID`? (created above)
 2) What would you like the name of your VM instance to be? Use dashes `-` instead of spaces in the name.
 3) What machine type do you want? If you don't know, ask Garett.
@@ -74,9 +74,9 @@ https://console.cloud.google.com/iam-admin/
 9) What python version do you want running your code?
    - e.g. `3.7.3`
 10) What is the name of the git branch you want the VM to execute?
-    - Default if you cloned this repository is `master`
-11) What is the url of the repository you created above (cloned or existing)?
-    - e.g., `git@github.com:Garett-MacGowan/GCP-Scheduled-VM-Hook.git` (SHOULD NOT BE THIS ONE EXACTLY)
+    - Default is `master`
+11) What is the url of the repository you created above (forked or existing)?
+    - e.g., `git@github.com:GarettSoftware/GCP-Scheduled-VM-Hook.git` (SHOULD NOT BE THIS ONE)
 12) What time zone would you like to be the basis for the schedule?
     - e.g., `UTC`
 13) What time would you like the code to begin executing under the time zone?
@@ -109,7 +109,7 @@ Examples
   - Sending E-mail invoices to a network printer
 - Scheduled Miscellaneous Batch Data Processing
 
-If your use case isn't here, send me your use case, I will add it! garettsoftware@gmail.com
+If your use case isn't here, send me your use case, I will add it!
 
 ## Maintenance
 In this repository, you will find a folder called `hook/maintainence` which contains various useful interactive scripts. 
@@ -134,3 +134,26 @@ be invaluable in the event of a server outage during the scheduled run time.
 ### Recommendations
 Try your best to keep your business logic safe from unexpected outages. GCP VMs are more resilient to
 outages than local hardware, but there is always a small risk of failure (GCP scheduled outages).
+
+### License Information
+MIT License
+
+Copyright (c) 2021 Garett MacGowan
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
