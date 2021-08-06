@@ -53,7 +53,7 @@ do
   if [ "$USER_INPUT" != "done" ]
   then
     gcloud compute ssh "$VM_USERNAME"@"$COMPUTE_INSTANCE_NAME" --zone="$ZONE" \
-    --command="echo \"\"$USER_INPUT\"\" >> /home/$VM_USERNAME/.temp-environment-vars" \
+    --command="echo \"\"export $USER_INPUT\"\" >> /home/$VM_USERNAME/.temp-environment-vars" \
     || { echo "ERROR: Failed to add $USER_INPUT to .temp-environment-vars file"; return 1; }
   fi
 done

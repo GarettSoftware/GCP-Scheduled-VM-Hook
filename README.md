@@ -65,7 +65,7 @@ https://console.cloud.google.com/iam-admin/
       - `nvidia-tesla-p100-vws`
       - `nvidia-tesla-p4-vws`
     - Pricing https://cloud.google.com/compute/gpus-pricing
-5) Do you have a zone preference (where the VM will be located)?
+5) Do you have a zone preference (where the VM will be located)? https://cloud.google.com/compute/docs/regions-zones
     - Zone must be available for the requested hardware.
     - If you do not, a zone will be selected for you.
 6) What boot disk size do you require?
@@ -75,7 +75,7 @@ https://console.cloud.google.com/iam-admin/
    - e.g. `3.7.3`
 10) What is the name of the git branch you want the VM to execute?
     - Default is `master`
-11) What is the url of the repository you created above (forked or existing)?
+11) What is the url of the repository you created above?
     - e.g., `git@github.com:GarettSoftware/GCP-Scheduled-VM-Hook.git` (SHOULD NOT BE THIS ONE)
 12) What time zone would you like to be the basis for the schedule?
     - e.g., `UTC`
