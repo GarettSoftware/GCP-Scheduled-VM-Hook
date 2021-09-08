@@ -1,8 +1,8 @@
 # GCP-Scheduled-VM-Hook Usage Guide
 
 ## Prerequisites
-This repository assumes you have purchased Garett MacGowan's GCP Scheduled Virtual Machine
-Infrastructure Setup Service. See https://garettmacgowan.com/services/scheduled_compute/ for details.
+To be fully functional, this repository assumes you have purchased Garett MacGowan's Scheduled Python Virtual Machine 
+Template service. See https://garettmacgowan.com/services/scheduled_compute/ for details.
 
 ## What is this repository for?
 This repository works in conjunction with the infrastructure set up by Garett in order to
