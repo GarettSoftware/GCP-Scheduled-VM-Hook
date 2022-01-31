@@ -22,23 +22,34 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from functools import partial
+
 from datetime import datetime
+
+from multiprocessing import Queue
+
+import multiprocessing as mp
 
 """
 Feel free to copy the code below into other files in your project to enable logging to log/logs.
 Remember to use logger.info('Your message') or logger.warning('Your warning').
 """
-from hook.log_setup import get_logger
+from log.log_setup import get_logger, logger_init, LoggerManager
+import log.globals
 logger = get_logger(__name__)
 
 
 class SchedulerHook:
 
     def __init__(self):
-        pass
+        self.logger_manager: LoggerManager = logger_init()
 
     @staticmethod
-    def execute() -> None:
+    def _test_process(string: str, queue: Queue) -> None:
+        multiprocessing_logger = get_logger(__name__, queue=queue)
+        multiprocessing_logger.info(string)
+
+    def execute(self) -> None:
         """
         This function gets called by a chron tab shortly after the virtual machine in GCP wakes up.
 
@@ -55,11 +66,22 @@ class SchedulerHook:
         Example 1
         logger.info("Hello World!")
         """
+
+        pool = mp.Pool(processes=mp.cpu_count())
+        pool.imap_unordered(func=partial(
+            self._test_process,
+            queue=log.globals.logger_queue,
+        ), iterable=['1', '2', '3', '4', '5'])
+        pool.close()
+        pool.join()
+
         """
         Example 2
         from your_code import main
         main()
         """
+
+        self.logger_manager.terminate_logger()
 
         end_time: datetime = datetime.now()
         elapsed_time = end_time - start_time

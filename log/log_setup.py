@@ -28,6 +28,7 @@ from typing import Optional
 
 from logging import Logger
 import logging
+import log.globals
 import logging.handlers
 
 from multiprocessing import Manager, Queue, current_process
@@ -57,6 +58,8 @@ def get_logger(name: str, queue: Optional[Queue] = None) -> Logger:
                 queue=log.globals.logger_queue,
                 parameters=parameters
             ))
+            pool.close()
+            pool.join()
 
             Set up a logger instance from within the function that multiprocessing is being applied to. It will communicate
             with the root logger using the queue.
@@ -95,9 +98,9 @@ def get_logger(name: str, queue: Optional[Queue] = None) -> Logger:
         if queue_handler.name not in [x.name for x in root.handlers]:
             root.addHandler(queue_handler)
 
-        logger = logging.getLogger(name=name)
+    logger = logging.getLogger(name=name)
 
-        return logger
+    return logger
 
 
 class RedirectToLogger(object):
