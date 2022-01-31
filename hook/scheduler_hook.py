@@ -25,7 +25,7 @@ SOFTWARE.
 from datetime import datetime
 
 """
-Feel free to copy the code below into other files in your project to enable logging to hooks/logs.
+Feel free to copy the code below into other files in your project to enable logging to log/logs.
 Remember to use logger.info('Your message') or logger.warning('Your warning').
 """
 from hook.log_setup import get_logger

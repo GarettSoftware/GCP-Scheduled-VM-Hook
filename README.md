@@ -16,7 +16,7 @@ execution to work correctly.
 1) Modified to execute code you have already written. (recommended)
 2) Extended to execute code you have not written yet.
 
-By default, `scheduler_hook.py` logs a `hello world` to the `hook/logs' directory inside the virtual machine.
+By default, `scheduler_hook.py` logs a `hello world` to the `log/logs' directory inside the virtual machine.
 
 ## Setup Instructions
 See YouTube video here for walk-through: TODO

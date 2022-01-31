@@ -32,11 +32,11 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 # Zip the logs folder
 gcloud compute ssh "$VM_USERNAME"@"$COMPUTE_INSTANCE_NAME" --zone="$ZONE" \
---command="cd /home/$VM_USERNAME/$REPOSITORY_NAME/hook/logs && zip -r /home/$VM_USERNAME/logs.zip ./" \
+--command="cd /home/$VM_USERNAME/$REPOSITORY_NAME/log/logs && zip -r /home/$VM_USERNAME/logs.zip ./" \
 || { echo "ERROR: Failed to zip the logs folder. May not exist... If issue persists, try SSH into VM to inspect."; return 1; }
 
 # Download the zipped folder from the VM into the hook/logs directory
-gcloud compute scp "$COMPUTE_INSTANCE_NAME":/home/"$VM_USERNAME"/logs.zip "$SCRIPT_DIR"/../logs/vm_logs.zip --zone="$ZONE" \
+gcloud compute scp "$COMPUTE_INSTANCE_NAME":/home/"$VM_USERNAME"/logs.zip "$SCRIPT_DIR"/../log/logs/vm_logs.zip --zone="$ZONE" \
 || { echo "ERROR: Failed to copy the logs.zip file off the VM"; return 1; }
 
 # Delete the zipped folder on the VM
