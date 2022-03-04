@@ -26,7 +26,7 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 # Start up the VM
-. ./common/start_vm.sh || { echo "Failed to start VM. Check your setup.config file."; return 1; }
+. ./common/start_vm.sh || { echo "Failed to start VM. Check your maintenance.config file."; return 1; }
 
 ### Download the logs from the VM ###
 
@@ -45,4 +45,4 @@ gcloud compute ssh "$VM_USERNAME"@"$COMPUTE_INSTANCE_NAME" --zone="$ZONE" \
 || { echo "ERROR: Failed to delete the logs.zip folder on the VM"; return 1; }
 
 # Shut down the VM
-. ./common/stop_vm.sh  || { echo "Failed to stop VM. Check your setup.config file."; return 1; }
+. ./common/stop_vm.sh  || { echo "Failed to stop VM. Check your maintenance.config file."; return 1; }

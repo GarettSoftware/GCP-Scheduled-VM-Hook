@@ -1,6 +1,6 @@
 # Maintenance Setup
 
-Please ensure you have received or created a `setup.config` file with the following format in the
+Please ensure you have received or created a `maintenance.config` file with the following format in the
 hook/maintenance directory:
 
 ```

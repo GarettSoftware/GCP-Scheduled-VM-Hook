@@ -23,7 +23,7 @@
 # SOFTWARE.
 
 # Load the config
-. ./setup.config
+. ./maintenance.config
 
 # Set the active project for the gcloud CLI
 gcloud config set project "$PROJECT_ID" \

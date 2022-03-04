@@ -9,4 +9,4 @@ logs/
 .env
 
 # Configurations
-hook/maintenance/setup.config
+hook/maintenance/maintenance.config

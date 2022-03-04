@@ -23,7 +23,7 @@
 # SOFTWARE.
 
 # Load the config
-. ./setup.config
+. ./maintenance.config
 
 # Set the active project for the gcloud CLI
 gcloud config set project "$PROJECT_ID" \
@@ -33,7 +33,7 @@ gcloud config set project "$PROJECT_ID" \
 ### Manually startup the VM, run the application, download the logs, and shut down the VM ###
 
 # Start up the VM
-. ./common/start_vm.sh || { echo "Failed to start VM. Check your setup.config file."; return 1; }
+. ./common/start_vm.sh || { echo "Failed to start VM. Check your maintenance.config file."; return 1; }
 
 # Run the bootstrap.sh file
 gcloud compute ssh "$VM_USERNAME"@"$COMPUTE_INSTANCE_NAME" --zone="$ZONE" --command=". /home/$VM_USERNAME/$REPOSITORY_NAME/hook/bootstrap.sh" 2> /dev/null

@@ -23,7 +23,7 @@
 # SOFTWARE.
 
 # Start up the VM
-. ./common/start_vm.sh || { echo "Failed to start VM. Check your setup.config file."; return 1; }
+. ./common/start_vm.sh || { echo "Failed to start VM. Check your maintenance.config file."; return 1; }
 
 ### Upload a file to the VM ###
 
@@ -44,4 +44,4 @@ gcloud compute scp "$LOCAL_FILE_PATH" "$VM_USERNAME"@"$COMPUTE_INSTANCE_NAME":"$
 || { echo "ERROR: Failed to copy the file to the VM"; return 1; }
 
 # Shut down the VM
-. ./common/stop_vm.sh  || { echo "Failed to stop VM. Check your setup.config file."; return 1; }
+. ./common/stop_vm.sh  || { echo "Failed to stop VM. Check your maintenance.config file."; return 1; }
