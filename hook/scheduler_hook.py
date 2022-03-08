@@ -89,5 +89,8 @@ class SchedulerHook:
 
 
 if __name__ == '__main__':
+    # Explicitly set process start method to get consistent behavior across platforms.
+    mp.set_start_method('spawn')
+
     hook: SchedulerHook = SchedulerHook()
     hook.execute()
