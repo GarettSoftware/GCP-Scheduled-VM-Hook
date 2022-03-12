@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import re
 import os
 import sys
 
@@ -56,14 +57,22 @@ class LoggerManager:
         log.globals.logger_queue.put(None)
         # Join the thread back to the main thread.
         self.logger_thread.join()
-        # Shut down the logger to prevent file locking.
+
+        # Shut down the handlers
+        root = logging.getLogger()
+        for handler in root.handlers:
+            handler.close()
+            root.removeHandler(handler)
+
+        # Shutdown logging
         logging.shutdown()
 
 
 class RedirectToLogger(object):
     """
-    Used to redirect stdout and stderr to logger in configure_logging_handlers
+    Used to redirect stdout and stderr to logger in _redirect_stdout_stderr
     """
+
     def __init__(self, logger, log_level=logging.INFO):
         self.logger = logger
         self.log_level = log_level
@@ -76,47 +85,78 @@ class RedirectToLogger(object):
         pass
 
 
-def _add_file_handler(instance: Logger, log_formatter: logging.Formatter, folder_name: Optional[str] = None):
+class CreateFileHandlerHandler(logging.Handler):
+
+    def emit(self, record):
+        """
+        Create a file handler, attached to the logger instance.
+        """
+        try:
+            # Handle logging to separate file, if requested:
+            segregate_regex = '(LOGSEG\(.*?\))'
+            segregate_folder_name = None
+            if re.findall(segregate_regex, record.msg):
+                # Determine the segregate folder name defined in the log string.
+                segregate_folder_name = re.findall('(?<=\()(.*)(?=\))', re.findall(segregate_regex, record.msg)[0])[0]
+                final_message = re.sub(segregate_regex, '', record.message)
+                # Rewrite the log message to not include the segregation tag.
+                record.message = final_message
+                record.msg = final_message
+                # Create the rotating file handler for the segregate folder, if necessary
+            if segregate_folder_name:
+                logger = logging.getLogger(segregate_folder_name)
+                # Don't propagate to the root logger, this would cause infinite recursion.
+                logger.propagate = False
+                # Add a file handler to the logger instance for the segregate folder.
+                _add_file_handler(logger, log_formatter=_get_log_formatter(), folder_name=segregate_folder_name)
+                logger.handle(record)
+        except RecursionError:
+            raise
+        except Exception:
+            self.handleError(record)
+
+
+def _add_file_handler(instance, log_formatter, folder_name: Optional[str] = None):
     """
-    This method adds a file handler to the given logger instance.
+
     Args:
-        instance: The logger instance to add the file handler to.
-        log_formatter: The log formatter for the file handler.
-        folder_name: The name of the folder to place the log files in.
+        instance:
+        log_formatter:
+        folder_name:
 
     Returns:
 
     """
-    '''
-    Get the config. This is an anti-pattern (normally we would pass config from program entry point), but we make an
-    exception here for simplicity sake.
-    '''
-    config: ConfigParser = get_config()
+    # If the file handler doesn't already exist, create it.
+    if not folder_name or folder_name and folder_name not in [x.name for x in instance.handlers]:
+        '''
+        Get the config. This is an anti-pattern (normally we would pass config from program entry point), but we make an
+        exception here for simplicity sake.
+        '''
+        config: ConfigParser = get_config()
 
-    # Create the directory for the logs if necessary.
-    base_log_path = config.get('Logger', 'log_dir')
-    if folder_name:
-        log_path = f'{base_log_path}/{folder_name}'
-    else:
-        log_path = base_log_path
-    # Make directory if it doesn't exist.
-    if not os.path.isdir(log_path):
-        os.makedirs(log_path)
+        # Create the directory for the logs if necessary.
+        base_log_path = config.get('Logger', 'log_dir')
+        if folder_name:
+            log_path = f'{base_log_path}/{folder_name}'
+        else:
+            log_path = base_log_path
+        if not os.path.isdir(log_path):
+            os.makedirs(log_path)
 
-    # Define the file handler.
-    file_handler = logging.handlers.RotatingFileHandler(f"{log_path}/scheduled_vm.log",
-                                                        maxBytes=config.getint('Logger', 'max_bytes'),
-                                                        backupCount=config.getint('Logger', 'backup_count'))
-    file_handler.setFormatter(log_formatter)
-    instance.addHandler(file_handler)
+        # Define the file handler.
+        file_handler = logging.handlers.RotatingFileHandler(f"{log_path}/scheduled_vm.log",
+                                                            maxBytes=config.getint('Logger', 'max_bytes'),
+                                                            backupCount=config.getint('Logger', 'backup_count'))
+        file_handler.set_name(folder_name)
+
+        # Add the file handler.
+        file_handler.setFormatter(log_formatter)
+        instance.addHandler(file_handler)
 
 
 def _get_log_formatter():
-    """
-    This method defines the log formatter.
-    Returns:
-
-    """
+    # Define the formatter.
     return logging.Formatter("%(asctime)s: %(levelname)7s > %(message)s")
 
 
@@ -148,12 +188,7 @@ def _redirect_stdout_stderr():
     sys.stderr = stderr_logger
 
 
-def _configure_logging_handlers():
-    """
-    This function configures logging handlers for the root logger.
-    Returns:
-
-    """
+def _configure_logging_handlers() -> Logger:
     # Get the root logger.
     root = _get_root_logger()
 
@@ -163,6 +198,10 @@ def _configure_logging_handlers():
     # Add the file handler
     _add_file_handler(root, log_formatter)
 
+    # Create the handler that creates more file handlers.
+    file_handler_handler = CreateFileHandlerHandler()
+    root.addHandler(file_handler_handler)
+
     # Define the stream handler.
     stdout_handler = logging.StreamHandler(sys.stdout)
     stdout_handler.setFormatter(log_formatter)
@@ -170,6 +209,8 @@ def _configure_logging_handlers():
 
     # Redirect stdout and stderr to a logger instance.
     _redirect_stdout_stderr()
+
+    return root
 
 
 def _lt(queue: Queue):
@@ -207,7 +248,7 @@ def logger_init() -> LoggerManager:
     return LoggerManager(logger_thread=logger_thread)
 
 
-def get_logger(name: str, queue: Optional[Queue] = None, segregate_folder: Optional[str] = None) -> Logger:
+def get_logger(name: str, queue: Optional[Queue] = None) -> Logger:
     """
     This function gets a logger instance.
 
@@ -248,7 +289,6 @@ def get_logger(name: str, queue: Optional[Queue] = None, segregate_folder: Optio
     Args:
         name: The name for the logger.
         queue: A Queue instance generated by logger_init(), held in the variable log.globals.logger_queue
-        segregate_folder: An optional segregate folder name to output logs from the logger instance to.
 
     Returns:
 
@@ -270,15 +310,11 @@ def get_logger(name: str, queue: Optional[Queue] = None, segregate_folder: Optio
         # Redirect stdout to a logger instance
         _redirect_stdout_stderr()
 
-        # Add the handlers if they don't already exist.
+        # Add the handler if it doesn't already exist.
         if queue_handler.name not in [x.name for x in root.handlers]:
             # Add the queue handler.
             root.addHandler(queue_handler)
 
     logger = logging.getLogger(name=name)
-
-    # Create a file handler instance for the alternative folder, if it is defined.
-    if segregate_folder:
-        _add_file_handler(instance=logger, log_formatter=_get_log_formatter(), folder_name=segregate_folder)
 
     return logger
