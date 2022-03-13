@@ -26,6 +26,9 @@ from functools import partial
 
 from datetime import datetime
 
+from configparser import ConfigParser
+from configurations.config import get_config
+
 from multiprocessing import Queue
 
 import multiprocessing as mp
@@ -42,7 +45,8 @@ logger = get_logger(__name__)
 class SchedulerHook:
 
     def __init__(self):
-        self.logger_manager: LoggerManager = logger_init()
+        self.config: ConfigParser = get_config()
+        self.logger_manager: LoggerManager = logger_init(self.config)
 
     @staticmethod
     def _test_process(string: str, queue: Queue) -> None:

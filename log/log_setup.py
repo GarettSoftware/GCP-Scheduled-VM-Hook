@@ -25,6 +25,7 @@ SOFTWARE.
 import re
 import os
 import sys
+import shutil
 
 from typing import Optional
 
@@ -98,7 +99,7 @@ class CreateFileHandlerHandler(logging.Handler):
             if re.findall(segregate_regex, record.msg):
                 # Determine the segregate folder name defined in the log string.
                 segregate_folder_name = re.findall('(?<=\()(.*)(?=\))', re.findall(segregate_regex, record.msg)[0])[0]
-                final_message = re.sub(segregate_regex, '', record.message)
+                final_message = re.sub(segregate_regex, '', record.msg)
                 # Rewrite the log message to not include the segregation tag.
                 record.message = final_message
                 record.msg = final_message
@@ -230,14 +231,27 @@ def _lt(queue: Queue):
         logger.handle(record)
 
 
-def logger_init() -> LoggerManager:
+def logger_init(config: ConfigParser) -> LoggerManager:
     """
     This function initializes a logger as well as a thread to process logs produced by concurrent processes. Logs
     from concurrent processes should be passed through the multiprocessing queue stored in log.globals.logger_queue.
 
+    Args:
+        config: A ConfigParser containing the configuration.
+
     Returns: A LoggerManager instance which can be used to terminate the logger thread at cleanup time.
 
     """
+    logger_dir = config.get('Logger', 'log_dir')
+
+    # Delete the directory if the config specifies to do so.
+    if config.getboolean('Logger', 'pre_purge'):
+        if os.path.isdir(logger_dir):
+            shutil.rmtree(logger_dir)
+
+    if not os.path.isdir(logger_dir):
+        os.makedirs(logger_dir)
+
     log.globals.logger_queue = Manager().Queue()
 
     _configure_logging_handlers()

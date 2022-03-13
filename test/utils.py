@@ -28,6 +28,9 @@ import stat
 import shutil
 import logging
 
+from configparser import ConfigParser
+from configurations.config import get_config
+
 from importlib import reload
 
 from typing import Tuple, Optional
@@ -35,10 +38,12 @@ from typing import Tuple, Optional
 from log.log_setup import LoggerManager, logger_init
 
 
-def common_test_setup(custom_config: Optional[str] = None) -> Tuple[object, object, LoggerManager]:
+def common_test_setup(custom_config: Optional[str] = None) -> Tuple[object, object, LoggerManager, ConfigParser]:
     if custom_config:
         os.environ['ACTIVE_CONFIG'] = custom_config
     os.environ['TESTING'] = 'true'
+
+    config: ConfigParser = get_config()
 
     # Create a test log directory
     if not os.path.isdir('test/data'):
@@ -47,9 +52,9 @@ def common_test_setup(custom_config: Optional[str] = None) -> Tuple[object, obje
     # Cache the stdout and stderr, they are monkey patched when logging.
     stdout = sys.stdout
     stderr = sys.stderr
-    logger_manager: LoggerManager = logger_init()
+    logger_manager: LoggerManager = logger_init(config)
 
-    return stdout, stderr, logger_manager
+    return stdout, stderr, logger_manager, config
 
 
 def common_test_teardown(logger_manager: LoggerManager, stdout, stderr):

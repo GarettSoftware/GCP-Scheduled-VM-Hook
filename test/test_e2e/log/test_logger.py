@@ -50,7 +50,7 @@ class TestLogger(TestCase):
         common_test_teardown(logger_manager=self.logger_manager, stdout=self.stdout, stderr=self.stderr)
 
     def test_1(self):
-        self.stdout, self.stderr, self.logger_manager = common_test_setup()
+        self.stdout, self.stderr, self.logger_manager, _ = common_test_setup()
 
         sequential_logger = get_logger(__name__)
         sequential_logger.info(f'Starting thread...')
@@ -73,7 +73,7 @@ class TestLogger(TestCase):
 
     def test_2(self):
         # Use custom configurations for this test.
-        self.stdout, self.stderr, self.logger_manager = common_test_setup(custom_config='test_e2e/log/test_2')
+        self.stdout, self.stderr, self.logger_manager, _ = common_test_setup(custom_config='test_e2e/log/test_2')
 
         _test_2_helper()
 
