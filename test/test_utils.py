@@ -23,25 +23,22 @@ SOFTWARE.
 """
 
 import os
-import sys
 import stat
 import shutil
 import logging
 
-from configparser import ConfigParser
-from configurations.config import get_config
-
 from importlib import reload
 
-from typing import Tuple, Optional
+from typing import Tuple
+
+from configparser import ConfigParser
+from configurations.config import get_config
 
 from log.log_setup import LoggerManager, logger_init
 
 
-def common_test_setup(custom_config: Optional[str] = None) -> Tuple[object, object, LoggerManager, ConfigParser]:
-    if custom_config:
-        os.environ['ACTIVE_CONFIG'] = custom_config
-    os.environ['TESTING'] = 'true'
+def common_test_setup() -> ConfigParser:
+    os.environ['ACTIVE_CONFIG'] = 'test'
 
     config: ConfigParser = get_config()
 
@@ -49,24 +46,10 @@ def common_test_setup(custom_config: Optional[str] = None) -> Tuple[object, obje
     if not os.path.isdir('test/data'):
         os.makedirs('test/data')
 
-    # Cache the stdout and stderr, they are monkey patched when logging.
-    stdout = sys.stdout
-    stderr = sys.stderr
-    logger_manager: LoggerManager = logger_init(config)
-
-    return stdout, stderr, logger_manager, config
+    return config
 
 
-def common_test_teardown(logger_manager: LoggerManager, stdout, stderr):
-    # Terminate the logger.
-    logger_manager.terminate_logger()
-    # Reload the logger
-    reload(logging)
-
-    # Reload sys after patching sys.stderr and sys.stdout for logger
-    sys.stdout = stdout
-    sys.stderr = stderr
-
+def common_test_teardown():
     # # Change folder permissions and delete the directory.
     os.chmod('test/data', stat.S_IWUSR)
     shutil.rmtree('test/data')
@@ -74,4 +57,20 @@ def common_test_teardown(logger_manager: LoggerManager, stdout, stderr):
     # Reset environment variables
     if 'ACTIVE_CONFIG' in os.environ:
         del os.environ['ACTIVE_CONFIG']
-    del os.environ['TESTING']
+
+
+def common_test_setup_w_logger() -> Tuple[LoggerManager, ConfigParser]:
+    config = common_test_setup()
+
+    logger_manager: LoggerManager = logger_init(config)
+
+    return logger_manager, config
+
+
+def common_test_teardown_w_logger(logger_manager: LoggerManager):
+    # Terminate the logger.
+    logger_manager.terminate_logger()
+    # Reload the logger
+    reload(logging)
+
+    common_test_teardown()

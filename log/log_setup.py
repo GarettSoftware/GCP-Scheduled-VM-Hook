@@ -32,7 +32,6 @@ from typing import Optional
 from threading import Thread
 
 from configparser import ConfigParser
-from configurations.config import get_config
 
 from multiprocessing import Queue, Manager, current_process
 
@@ -77,16 +76,25 @@ class RedirectToLogger(object):
     def __init__(self, logger, log_level=logging.INFO):
         self.logger = logger
         self.log_level = log_level
+        self.value = None
 
     def write(self, message):
+        self.value = message
         for line in message.rstrip().splitlines():
             self.logger.log(self.log_level, line.rstrip())
 
     def flush(self):
         pass
 
+    def getvalue(self):
+        return self.value
+
 
 class CreateFileHandlerHandler(logging.Handler):
+
+    def __init__(self, config: ConfigParser):
+        super().__init__()
+        self.config = config
 
     def emit(self, record):
         """
@@ -109,7 +117,8 @@ class CreateFileHandlerHandler(logging.Handler):
                 # Don't propagate to the root logger, this would cause infinite recursion.
                 logger.propagate = False
                 # Add a file handler to the logger instance for the segregate folder.
-                _add_file_handler(logger, log_formatter=_get_log_formatter(), folder_name=segregate_folder_name)
+                _add_file_handler(config=self.config, instance=logger, log_formatter=_get_log_formatter(),
+                                  folder_name=segregate_folder_name)
                 logger.handle(record)
         except RecursionError:
             raise
@@ -117,10 +126,11 @@ class CreateFileHandlerHandler(logging.Handler):
             self.handleError(record)
 
 
-def _add_file_handler(instance, log_formatter, folder_name: Optional[str] = None):
+def _add_file_handler(config: ConfigParser, instance, log_formatter, folder_name: Optional[str] = None):
     """
 
     Args:
+        config:
         instance:
         log_formatter:
         folder_name:
@@ -130,12 +140,6 @@ def _add_file_handler(instance, log_formatter, folder_name: Optional[str] = None
     """
     # If the file handler doesn't already exist, create it.
     if not folder_name or folder_name and folder_name not in [x.name for x in instance.handlers]:
-        '''
-        Get the config. This is an anti-pattern (normally we would pass config from program entry point), but we make an
-        exception here for simplicity sake.
-        '''
-        config: ConfigParser = get_config()
-
         # Create the directory for the logs if necessary.
         base_log_path = config.get('Logger', 'log_dir')
         if folder_name:
@@ -189,7 +193,7 @@ def _redirect_stdout_stderr():
     sys.stderr = stderr_logger
 
 
-def _configure_logging_handlers() -> Logger:
+def _configure_logging_handlers(config: ConfigParser) -> Logger:
     # Get the root logger.
     root = _get_root_logger()
 
@@ -197,10 +201,10 @@ def _configure_logging_handlers() -> Logger:
     log_formatter = _get_log_formatter()
 
     # Add the file handler
-    _add_file_handler(root, log_formatter)
+    _add_file_handler(config, root, log_formatter)
 
     # Create the handler that creates more file handlers.
-    file_handler_handler = CreateFileHandlerHandler()
+    file_handler_handler = CreateFileHandlerHandler(config=config)
     root.addHandler(file_handler_handler)
 
     # Define the stream handler.
@@ -254,7 +258,7 @@ def logger_init(config: ConfigParser) -> LoggerManager:
 
     log.globals.logger_queue = Manager().Queue()
 
-    _configure_logging_handlers()
+    _configure_logging_handlers(config)
 
     logger_thread = Thread(target=_lt, args=(log.globals.logger_queue,))
     logger_thread.start()
