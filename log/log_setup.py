@@ -317,7 +317,7 @@ def get_logger(name: str, queue: Optional[Queue] = None) -> Logger:
         upon spawn of a new process).
         '''
         pass
-    elif queue is not None:
+    elif queue is not None and current_process().name != 'MainProcess':
         # Set up the queue handler for the logger instance.
         queue_handler = logging.handlers.QueueHandler(queue)
         queue_handler.set_name(name=current_process().pid.__str__())
