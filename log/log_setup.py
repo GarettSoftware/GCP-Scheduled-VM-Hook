@@ -27,9 +27,9 @@ import os
 import sys
 import shutil
 
-from typing import Optional
-
 from threading import Thread
+
+from typing import Optional, Tuple
 
 from configparser import ConfigParser
 
@@ -96,22 +96,48 @@ class CreateFileHandlerHandler(logging.Handler):
         super().__init__()
         self.config = config
 
+        self.segregate_regex = re.compile('(LOGSEG\(.*?\))')
+        self.seg_name_regex = re.compile('(?<=\()(.*)(?=\))')
+
+    def _process_logseg(self, log: str) -> Tuple[str, str]:
+        """
+        This method processes a logseg log record.
+        Args:
+            log: The log string to be processed.
+
+        Returns: A Tuple containing the final message and the segregate folder name for the log string.
+
+        """
+        segregate_folder_name = None
+        if re.findall(self.segregate_regex, log):
+            # Determine the segregate folder name defined in the log string.
+            segregate_folder_name = re.findall(
+                self.seg_name_regex,
+                re.findall(self.segregate_regex, log)[0])[0]
+            # Rewrite the log message to not include the segregation tag.
+            final_message = re.sub(self.segregate_regex, '', log)
+        else:
+            final_message = log
+        return final_message, segregate_folder_name
+
     def emit(self, record):
         """
         Create a file handler, attached to the logger instance.
         """
         try:
             # Handle logging to separate file, if requested:
-            segregate_regex = '(LOGSEG\(.*?\))'
             segregate_folder_name = None
-            if re.findall(segregate_regex, record.msg):
-                # Determine the segregate folder name defined in the log string.
-                segregate_folder_name = re.findall('(?<=\()(.*)(?=\))', re.findall(segregate_regex, record.msg)[0])[0]
-                final_message = re.sub(segregate_regex, '', record.msg)
-                # Rewrite the log message to not include the segregation tag.
-                record.message = final_message
-                record.msg = final_message
-                # Create the rotating file handler for the segregate folder, if necessary
+
+            # Handle message property
+            if hasattr(record, 'message'):
+                record.message, name = self._process_logseg(record.message)
+                segregate_folder_name = name if name else segregate_folder_name
+
+            # Handle msg property
+            if hasattr(record, 'msg'):
+                record.msg, name = self._process_logseg(record.msg)
+                segregate_folder_name = name if name else segregate_folder_name
+
             if segregate_folder_name:
                 logger = logging.getLogger(segregate_folder_name)
                 # Don't propagate to the root logger, this would cause infinite recursion.

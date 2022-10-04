@@ -1,27 +1,3 @@
-"""
-MIT License
-
-Copyright (c) 2021 Garett MacGowan
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
-
 import datetime
 
 import numpy as np
@@ -61,11 +37,11 @@ class TestLogger(TestCase):
         with open('test/data/log/logs/thread_1/scheduled_vm.log', 'r') as f:
             content = f.readlines()
             content_len = len(content)
-            assert content_len == 1, f"Only one log should be in thread_1 log file. Found {content_len}.\n{content}"
+            assert content_len == 11, f"Only one log should be in thread_1 log file. Found {content_len}.\n{content}"
         with open('test/data/log/logs/thread_2/scheduled_vm.log', 'r') as f:
             content = f.readlines()
             content_len = len(content)
-            assert content_len == 1, f"Only one log should be in thread_2 log file. Found {content_len}.\n{content}"
+            assert content_len == 11, f"Only one log should be in thread_2 log file. Found {content_len}.\n{content}"
         with open('test/data/log/logs/scheduled_vm.log', 'r') as f:
             content = f.readlines()
             content_len = len(content)
@@ -103,10 +79,10 @@ def _multiprocessing_logger_and_redirects_helper(sequential_logger):
     # Start up new threads for the two inbound queues.
     t1 = Thread(target=_multiprocessing_logger_and_redirects_threading_helper,
                 args=(1, iterable),
-                daemon=True)
+                daemon=False)
     t2 = Thread(target=_multiprocessing_logger_and_redirects_threading_helper,
                 args=(2, iterable),
-                daemon=True)
+                daemon=False)
     t1.start()
     t2.start()
 
@@ -134,7 +110,7 @@ def _multiprocessing_logger_and_redirects_multiprocessing_helper(i: int, thread_
     multiprocessing_logger.info(f'Thread: {thread_num}, Multiprocessing logger: {i}')
 
     # Print to sys.stdout to check if logger redirect is working.
-    print(f'SEGLOG(thread_{thread_num})Thread: {thread_num}, Multiprocessing sys.stdout logger: {i}')
+    print(f'LOGSEG(thread_{thread_num})Thread: {thread_num}, Multiprocessing sys.stdout logger: {i}')
 
 
 # ---- multiprocessing_logger_file_rotation helpers ---- #
